@@ -1,30 +1,29 @@
 class Proceso:
-    ESTADOS = ["Nuevo", "Listo", "Ejecutando", "Bloqueado", "Terminado"]
-
-    def __init__(self, pid, tamanio, tiempo_cpu, prioridad=0):
+    def __init__(self, pid, tamanio, tiempo_cpu):
         self.pid = pid
-        self.tamanio = tamanio          # Memoria que necesita en MB
-        self.tiempo_cpu = tiempo_cpu    # Tiempo que necesita en ticks
-        self.prioridad = prioridad
-        self.estado = "Nuevo"
+        self.tamanio = tamanio
+        self.tiempo_cpu = tiempo_cpu
         self.tiempo_restante = tiempo_cpu
-
-    def cambiar_estado(self, nuevo_estado):
-        if nuevo_estado in Proceso.ESTADOS:
-            self.estado = nuevo_estado
+        self.estado = "Nuevo"
+        self.tiempo_llegada = None
+        self.tiempo_finalizacion = None
+        self.tiempo_espera = 0
 
     def ejecutar(self, quantum=1):
-        """Simula la ejecución del proceso por una unidad de tiempo."""
-        if self.estado != "Ejecutando":
-            self.estado = "Ejecutando"
-
         self.tiempo_restante -= quantum
         if self.tiempo_restante <= 0:
+            self.tiempo_restante = 0
             self.estado = "Terminado"
+        else:
+            self.estado = "Ejecutando"
+
+    def cambiar_estado(self, nuevo_estado):
+        if self.estado == "Listo" and nuevo_estado == "Listo":
+            self.tiempo_espera += 1
+        self.estado = nuevo_estado
 
     def terminado(self):
-        return self.estado == "Terminado"
+        return self.tiempo_restante <= 0
 
     def __str__(self):
-        return (f"[PID: {self.pid} | Estado: {self.estado} | "
-                f"Tamaño: {self.tamanio}MB | Tiempo restante: {self.tiempo_restante}]")
+        return f"🧾 Proceso {self.pid} | Estado: {self.estado} | Restante: {self.tiempo_restante}"
